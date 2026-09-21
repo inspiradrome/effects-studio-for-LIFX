@@ -1,2 +1,0 @@
-lifx-photons-core[web-server]==0.46.7
-
