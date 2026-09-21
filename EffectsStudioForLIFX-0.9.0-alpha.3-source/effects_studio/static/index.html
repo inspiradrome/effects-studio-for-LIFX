@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0c13" />
+    <title>Effects Studio for LIFX</title>
+    <meta name="description" content="Create playful animated effects for a LIFX Tube." />
+    <link rel="stylesheet" href="/static/app.css" />
+    <link rel="stylesheet" href="/static/library.css" />
+    <link rel="stylesheet" href="/static/workshop.css" />
+    <script src="/static/edition.js" defer></script>
+    <script src="/static/i18n.js" defer></script>
+    <script src="/static/app.js" defer></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header>
+        <div class="brand"><span class="spark">✦</span><div><strong>Effects Studio for LIFX</strong><small>Make a little light magic</small></div></div>
+        <button id="device-button" class="connection" type="button"><i class="dot"></i><span id="connection-label">Preview only</span></button>
+      </header>
+
+      <section class="workspace">
+        <div class="preview-panel">
+          <div class="lamp-wrap">
+            <div id="tube" class="tube" aria-label="Animated five by eleven Tube preview"></div>
+            <div class="socket"></div><div class="base"></div>
+          </div>
+          <div class="transport">
+            <button id="play" class="round primary" aria-label="Play">▶</button>
+            <button id="pause" class="round" aria-label="Pause">Ⅱ</button>
+            <button id="native" class="round" aria-label="Stop and restore LIFX state">■</button>
+          </div>
+          <p id="status-copy">Choose a look or describe one of your own.</p>
+        </div>
+
+        <div class="controls-panel">
+          <div class="intro"><span class="eyebrow">Effect workshop</span><h1 id="effect-name">Aurora</h1><p id="effect-description"></p></div>
+          <form id="idea-form" class="idea-box">
+            <label for="idea">What should the light feel like?</label>
+            <div><input id="idea" maxlength="160" placeholder="Calm ocean, then warm fire, then purple space…" /><button id="voice" class="voice-button" type="button" aria-label="Start voice input" title="Start voice input">🎤</button><button type="submit">Make it</button></div>
+            <small id="voice-status" class="voice-status" aria-live="polite"></small>
+            <footer><small id="generator-status">Local idea generator</small><button id="ai-settings" type="button">AI settings</button></footer>
+          </form>
+
+          <section id="workshop" class="workshop" aria-labelledby="workshop-title">
+            <div class="section-head workshop-head">
+              <div><span class="eyebrow">Hands on</span><h2 id="workshop-title">Build this effect</h2></div>
+              <small id="sequence-note" hidden>Editing the opening scene</small>
+            </div>
+            <div class="workshop-basics">
+              <label><span>Name</span><input id="builder-name" maxlength="60" /></label>
+              <label class="colour-field"><span>Background</span><input id="background-colour" type="color" /></label>
+              <label><span>Background glow <output id="background-value"></output></span><input id="background-level" type="range" min="0" max="1" step="0.01" /></label>
+            </div>
+            <div class="layer-heading">
+              <h3>Layers</h3>
+              <div><select id="new-layer-type" aria-label="New layer type"></select><button id="add-layer" type="button">＋ Add layer</button></div>
+            </div>
+            <div id="layer-editor" class="layer-editor"></div>
+          </section>
+
+          <section aria-labelledby="library-title">
+            <div class="section-head">
+              <h2 id="library-title">Your light shelf</h2>
+              <div class="library-actions">
+                <button id="favorite" type="button" title="Favourite this effect" aria-label="Favourite this effect">☆</button>
+                <button id="save" type="button">Save</button>
+                <button id="duplicate" type="button">Duplicate</button>
+                <button id="delete" type="button">Delete</button>
+                <button id="export" type="button">Export</button>
+                <button id="import" type="button">Import</button>
+                <input id="import-file" type="file" accept="application/json,.json" hidden />
+              </div>
+            </div>
+            <div id="effects" class="presets"></div>
+          </section>
+
+          <section class="tuning" aria-labelledby="tuning-title">
+            <h2 id="tuning-title">Tune it</h2>
+            <label><span>Motion <output id="speed-value">0.62×</output></span><input id="speed" type="range" min="0" max="3" step="0.05" /></label>
+            <label><span>Brightness <output id="brightness-value">72%</output></span><input id="brightness" type="range" min="0.05" max="1" step="0.01" /></label>
+          </section>
+
+          <details class="spec-box"><summary>Effect recipe (JSON)</summary><textarea id="spec" spellcheck="false"></textarea><button id="apply-spec" type="button">Apply recipe</button><button id="copy-spec" type="button">Copy</button></details>
+          <p id="message" class="message" role="alert"></p>
+        </div>
+      </section>
+    </main>
+
+    <dialog id="device-dialog">
+      <div class="dialog-head"><div><span class="eyebrow">Hardware</span><h2>Connect a LIFX Tube</h2></div><button id="close-dialog" class="close" aria-label="Close">×</button></div>
+      <p id="device-status">Preview only</p>
+      <div class="device-actions"><button id="scan">Scan this network</button><button id="reconnect">Reconnect</button></div>
+      <div id="device-results"></div>
+      <details><summary>Enter an address manually</summary><form id="manual-form"><input id="serial" maxlength="12" placeholder="12-character serial" /><input id="ip" placeholder="IPv4 address" /><button>Connect</button></form></details>
+      <p id="device-message" class="message" role="status"></p>
+    </dialog>
+    <dialog id="ai-dialog">
+      <div class="dialog-head"><div><span class="eyebrow">Idea generator</span><h2>Connect OpenAI</h2></div><button id="close-ai-dialog" class="close" aria-label="Close">×</button></div>
+      <p>OpenAI can turn a description into a new, editable effect recipe. Recipes remain data only and are validated before previewing.</p>
+      <form id="ai-form" class="ai-form">
+        <label><span>API key</span><input id="api-key" type="password" autocomplete="off" placeholder="Leave blank to use a saved key" /></label>
+        <label><span>Model</span><input id="ai-model" value="gpt-5.6-luna" autocomplete="off" /></label>
+        <label class="remember-key"><input id="remember-api-key" type="checkbox" checked /><span>Save securely in Windows Credential Manager</span></label>
+        <small id="credential-status">Without saving, a pasted key is held in memory for this session only. Effect descriptions and voice recordings are sent to OpenAI; API usage may incur charges.</small>
+        <div class="device-actions"><button type="submit">Use OpenAI</button><button id="use-offline" type="button">Use offline generator</button><button id="forget-api-key" type="button">Forget saved key</button></div>
+      </form>
+      <details class="language-settings">
+        <summary>Languages</summary>
+        <label><span>Language profile</span><select id="language-mode"></select></label>
+        <small id="language-note"></small>
+        <div class="language-actions"><button id="add-language" type="button">＋ Add language</button><button id="remove-language" type="button">Remove language</button></div>
+        <form id="language-form" class="language-form" hidden>
+          <label><span>Interface language name</span><input id="language-name" maxlength="60" placeholder="e.g. 日本語" required /></label>
+          <label><span>Language code</span><input id="language-code" maxlength="12" placeholder="e.g. ja" required /></label>
+          <small id="language-code-help">Used internally for speech recognition and language checks. Use a standard code such as ja, fr, or pt-BR.</small>
+          <label><span>Spoken and typed ideas</span><select id="communication-rule"><option value="any">Accept ideas in any language</option><option value="restricted">Require the interface language</option></select></label>
+          <div class="language-actions"><button type="submit">Generate and save</button><button id="cancel-language" type="button">Cancel</button></div>
+        </form>
+        <small id="language-message" class="message" role="status"></small>
+      </details>
+      <p id="ai-message" class="message" role="status"></p>
+    </dialog>
+  </body>
+</html>
